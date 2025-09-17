@@ -1,0 +1,158 @@
+Loading dataset...
+Moving 140 files from train to valid set...
+Moved: cks2ip8fq29yq0yufc4scftj8.png
+Moved: cks2ip8fq29z00yufgnfla2tf.png
+Moved: cks2ip8fq29za0yuf0tqu1qjs.jpg
+Moved: cks2ip8fq2a0j0yufdfssbc09.png
+Moved: cks2ip8fq2a0t0yufgab484s9.png
+Moved: cks2ip8fq2a130yuf5gyh2nrs.png
+Moved: cks2ip8fq2a180yufh98ue4yo.png
+Moved: cks2ip8fq2a1i0yuf9ra939xh.png
+Moved: cks2ip8fq2a1n0yuf8nqt3ndt.png
+Moved: cks2ip8fq2a1x0yuffrma5nom.png
+Moved: cks2ip8fr2a2c0yuf3pc66vjh.png
+Moved: cks2ip8fr2a2h0yuf2r8o8teg.png
+Moved: cks2ip8fr2a2m0yuf7tz6ci2u.png
+Moved: cks2ip8fr2a2w0yuf49bu0v1w.png
+Moved: cks2ip8fr2a310yufbu6f5yvk.png
+Moved: cks2ip8fr2a360yufgabnfga7.png
+Moved: cks2ip8fr2a3b0yuff9a6ac73.png
+Moved: cks2ip8fr2a3l0yuf8pbcfolv.png
+Moved: cks2ip8fr2a3q0yufadyu84rc.png
+Moved: cks2ip8fr2a3v0yuf4hws1b5t.png
+Moved: cks2ip8fr2a400yufhy4cdynz.png
+Moved: cks2ip8fr2a450yufh9g37b34.png
+Moved: cks2ip8fr2a4a0yuf57m734q6.png
+Moved: cks2ip8fr2a4z0yufhpqa3onx.png
+Moved: cks2ip8fr2a540yuf3ahybybs.png
+Moved: cks2ip8fs2a5j0yuf4zvzectm.png
+Moved: cks2ip8fs2a5t0yuf4t5267nv.png
+Moved: cks2ip8fs2a5y0yufdks3fnc8.png
+Moved: cks2ip8fs2a630yufaujvahc6.png
+Moved: cks2ip8fs2a680yuf1jlkaj72.png
+Moved: cks2ip8fs2a6d0yuf5vtsd1cg.png
+Moved: cks2ip8fs2a6i0yuf9ya2alpu.png
+Moved: cks2ip8fs2a6n0yuf3fqc6vl6.png
+Moved: cks2ip8fs2a6s0yuf82zxg497.png
+Moved: cks2ip8fs2a720yuf4pbd24dn.png
+Moved: cks2ip8fs2a770yuffdx863wg.png
+Moved: cks2ip8fs2a7c0yuf95snfwts.png
+Moved: cks2ip8fs2a7h0yuf02d1a04h.png
+Moved: cks2ip8fs2a7m0yuffbyc33if.png
+Moved: cks2ip8fs2a7r0yufdwttctv2.png
+Moved: cks2ip8fs2a7w0yufeg4c17pb.png
+Moved: cks2ip8fs2a810yuf7jtr4p97.png
+Moved: cks2ip8fs2a860yufeukp2rnh.png
+Moved: cks2ip8fs2a8l0yufho03g53d.png
+Moved: cks2ip8fs2a8q0yuf4vtpb6uz.png
+Moved: cks2ip8ft2a900yufcnmmbnqr.png
+Moved: cks2ip8ft2a950yuf7e2t5vc0.png
+Moved: cks2ip8ft2a9a0yufb9vj39mg.png
+Moved: cks2ip8ft2a9f0yufap5d8hw6.png
+Moved: cks2ip8ft2a9k0yufermt6rcf.png
+Moved: cks2ip8ft2a9p0yuf06pobwgb.png
+Moved: cks2ip8ft2aa40yuf8qoi6q13.png
+Moved: cks2ip8ft2aae0yuf0p261tau.png
+Moved: cks2ip8ft2aaj0yufe3k74e1l.png
+Moved: cks2ip8ft2aao0yufhqhidv86.png
+Moved: cks2ip8ft2aay0yufd1hegxsp.png
+Moved: cks2ip8ft2ab30yuf04t0cu7c.png
+Moved: cks2ip8ft2ab80yuf2otndehg.png
+Moved: cks2ip8ft2abn0yuf7mtm1geu.png
+Moved: cks2ip8ft2abs0yufala728o7.png
+Moved: cks2ip8ft2ac20yufdsbc1hq2.png
+Moved: cks2ip8ft2ac70yuf6rak2net.png
+Moved: cks2ip8ft2acc0yufdlzwb2kt.png
+Moved: cks2ip8fu2ach0yufcu3bh3ym.png
+Moved: cks2ip8fw2acm0yuf4x6g8zor.png
+Moved: cks2ip8fw2acr0yuf67hfduin.png
+Moved: cks2ip8fw2acw0yufc37k4odc.png
+Moved: cks2ip8fw2ad10yufac21cbdi.png
+Moved: cks2ip8fw2ad60yuf9qbebjsn.png
+Moved: cks2ip8fw2adb0yuf24dpc2q6.png
+Moved: cks2ip8fw2adg0yuf1dzy9uwg.png
+Moved: cks2ip8fw2adl0yuf5vdv9v0t.png
+Moved: cks2ip8fw2adq0yufcgr730l9.png
+Moved: cks2ip8fw2adv0yuf2jxu9g4b.png
+Moved: cks2ip8fw2ae00yuf9gr01f61.png
+Moved: cks2ip8fw2ae50yuf1ew55kdo.png
+Moved: cks2ip8fw2aeu0yufgnbwe7d9.png
+Moved: cks2ip8fw2aez0yuff2hn7yf6.png
+Moved: cks2ip8fw2afe0yufhlhta6hy.png
+Moved: cks2ip8fw2afj0yuff9h9cjnt.png
+Moved: cks2ip8fw2afo0yuf8x5geg4j.png
+Moved: cks2ip8fw2afy0yufguny1kml.png
+Moved: cks2ip8fx2ag30yuf36j23yh3.png
+Moved: cks2ip8fx2agd0yuf2rt9dbeq.png
+Moved: cks2ip8fx2agn0yufbzhggiuc.png
+Moved: cks2ip8fx2ags0yuf31g85zfn.png
+Moved: cks2ip8fx2ah20yufhhup4ec3.png
+Moved: cks2ip8fx2ah70yuffx8fdsj2.png
+Moved: cks2ip8fx2ahc0yuf6w8s49xa.png
+Moved: cks2ip8fx2ahh0yuf8c2v1661.png
+Moved: cks2ip8fx2ahm0yuffdyt5ueq.png
+Moved: cks2ip8fx2ahr0yuf1yzcd444.png
+Moved: cks2ip8fx2ai60yufg5lvclvo.png
+Moved: cks2ip8fx2aib0yufdd4o5cpm.png
+Moved: cks2ip8fx2ail0yuf7ujjgs4s.png
+Moved: cks2ip8fx2aiv0yuf6fo57a5d.png
+Moved: cks2ip8fx2aj50yuf4kr31xds.png
+Moved: cks2ip8fx2aja0yuf5pb807ia.png
+Moved: cks2ip8fx2ajk0yufdo4h88tp.png
+Moved: cks2ip8fy2ajp0yufct3v95vu.png
+Moved: cks2ip8fy2ak40yufb4x13kzd.png
+Moved: cks2ip8fy2ake0yuffktadmv7.png
+Moved: cks2ip8fy2ako0yuf19i62c44.png
+Moved: cks2ip8fy2akt0yufe7vobuu6.png
+Moved: cks2ip8fy2aky0yuf9nxc7ep4.png
+Moved: cks2ip8fy2aln0yuf410uemk2.png
+Moved: cks2ip8fy2alx0yufdqqk1ymo.png
+Moved: cks2ip8fy2am20yuf7h6d8xha.png
+Moved: cks2ip8fy2am70yuf8bjkft9u.png
+Moved: cks2ip8fy2amh0yuf86m2a1nb.png
+Moved: cks2ip8fy2amr0yufh9rh5zs3.png
+Moved: cks2ip8fz2an60yuf5baf04md.png
+Moved: cks2ip8fz2anb0yufgh486oi2.png
+Moved: cks2ip8fz2ao50yuf0zfpaq4i.png
+Moved: cks2ip8fz2aoa0yufc55xd7nq.png
+Moved: cks2ip8fz2aof0yuf8cqq45w0.png
+Moved: cks2ip8fz2aop0yuf62a4dqhn.png
+Moved: cks2ip8fz2aou0yuffiovhxs2.png
+Moved: cks2ip8fz2aoz0yuf5ef71prl.png
+Moved: cks2ip8fz2ap90yuf1tuy6abh.png
+Moved: cks2ip8fz2apj0yuf2f5f2tap.png
+Moved: cks2ip8fz2apo0yuf1xbser75.png
+Moved: cks2ip8fz2apt0yufe80n2of5.png
+Moved: cks2ip8fz2apy0yuf8svl3gl6.png
+Moved: cks2ip8fz2aq30yufdbw5em62.png
+Moved: cks2ip8g02aqn0yuf6rwc2lzk.png
+Moved: cks2ip8g02aqs0yuf253hbrvq.png
+Moved: cks2ip8g02aqx0yuf7rgt7zq4.png
+Moved: cks2ip8g02ar70yufbpsk6siz.png
+Moved: cks2ip8g02arc0yuf4t2cdu3q.png
+Moved: cks2ip8g02arr0yufd7gl4kkk.png
+Moved: cks2ip8g02arw0yufh4mz8qjp.png
+Moved: cks2ip8g02as10yuf5xctb6wb.png
+Moved: cks2ip8g02as60yufdu62hsxw.png
+Moved: cks2ip8g02asb0yuffj1u2ttz.png
+Moved: cks2ip8g02asl0yuf4pu557ad.png
+Moved: cks2ip8g02asv0yuf9f6q0mhk.png
+Moved: cks2ip8g02at00yufgwb4622y.png
+Moved: cks2ip8g02at50yuf89yz0n6d.png
+Moved: cks2ip8g02ata0yufb3z51xsm.png
+
+File moving process completed.
+Loading dataset...
+Initializing model on cpu...
+Starting training with data augmentation...
+Epoch [1/10], Train Loss: 477629.4835, Validation Loss: 656083.2569
+Epoch [2/10], Train Loss: 199784.2679, Validation Loss: 240577.9444
+Epoch [3/10], Train Loss: 123026.2211, Validation Loss: 93019.8229
+Epoch [4/10], Train Loss: 112536.1827, Validation Loss: 72386.9488
+Epoch [5/10], Train Loss: 73686.1950, Validation Loss: 69295.6350
+Epoch [6/10], Train Loss: 60853.4992, Validation Loss: 107672.0408
+Epoch [7/10], Train Loss: 55977.4792, Validation Loss: 47500.6042
+Epoch [8/10], Train Loss: 51743.8783, Validation Loss: 49237.7810
+Epoch [9/10], Train Loss: 38083.8477, Validation Loss: 33473.7493
+Epoch [10/10], Train Loss: 32128.5833, Validation Loss: 30038.3241
+Finished Training.

@@ -1,0 +1,9 @@
+# Python cache
+__pycache__/
+
+# Large dataset folder - should be downloaded separately
+Aariz/
+Aariz.zip
+
+# Trained model files
+*.pth
