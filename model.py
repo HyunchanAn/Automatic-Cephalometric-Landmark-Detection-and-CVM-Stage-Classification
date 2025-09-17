@@ -1,6 +1,49 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torchvision import models
+
+from config import NUM_CVM_STAGES, NUM_LANDMARKS
+
+class AdvancedCephNet(nn.Module):
+    def __init__(self):
+        super(AdvancedCephNet, self).__init__()
+        # Load a pre-trained ResNet-18 model
+        self.resnet = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
+
+        # Freeze the parameters of the pre-trained layers
+        for param in self.resnet.parameters():
+            param.requires_grad = False
+
+        # Get the number of input features for the classifier
+        num_ftrs = self.resnet.fc.in_features
+
+        # Replace the final fully connected layer with our custom heads
+        # We don't need the original resnet.fc layer, so we can effectively remove it
+        self.resnet.fc = nn.Identity() # Identity layer to effectively remove the original fc layer
+
+        # Output head for landmark detection (regression)
+        self.landmark_head = nn.Linear(num_ftrs, NUM_LANDMARKS * 2)
+
+        # Output head for CVM stage classification
+        self.cvm_head = nn.Linear(num_ftrs, NUM_CVM_STAGES)
+
+    def forward(self, x):
+        # Pass input through the ResNet base
+        features = self.resnet(x)
+        # The features are already flattened by the adaptive pooling layer in ResNet
+        
+        # Get the outputs from the two heads
+        landmarks = self.landmark_head(features)
+        cvm_stage = self.cvm_head(features)
+
+        return landmarks, cvm_stage
+
+    def unfreeze(self):
+        """Unfreezes the parameters of the ResNet base for fine-tuning."""
+        for param in self.resnet.parameters():
+            param.requires_grad = True
+
 
 class CephNet(nn.Module):
     def __init__(self):
@@ -20,7 +63,6 @@ class CephNet(nn.Module):
         self.fc1 = nn.Linear(self.fc_input_size, 512)
 
         # Output head for landmark detection (regression)
-        # 29 landmarks, each with an x and y coordinate
         self.landmark_head = nn.Linear(512, 29 * 2)
 
         # Output head for CVM stage classification
@@ -34,7 +76,6 @@ class CephNet(nn.Module):
         x = self.pool(F.relu(self.conv3(x)))
 
         # Flatten the feature map
-        # The view call will need to be adjusted if the batch size is not the first dimension
         x = x.view(-1, self.fc_input_size)
 
         # Fully connected part
@@ -45,5 +86,3 @@ class CephNet(nn.Module):
         cvm_stage = self.cvm_head(x)
 
         return landmarks, cvm_stage
-
-
