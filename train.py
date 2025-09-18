@@ -15,7 +15,7 @@ from config import CHECKPOINT_PATH, NUM_LANDMARKS, DATASET_PATH, IMAGE_SIZE
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 LEARNING_RATE = 0.001
 BATCH_SIZE = 16 # Adjust based on your system's memory
-EPOCHS = 100 # Number of epochs for training
+EPOCHS = 200 # Number of epochs for training
 LR_SCHEDULER_PATIENCE = 5 # Number of epochs with no improvement after which learning rate will be reduced
 LR_SCHEDULER_FACTOR = 0.1 # Factor by which the learning rate will be reduced
 
@@ -77,7 +77,18 @@ def main():
 
     # --- 4. Training Loop ---
     print("Starting training...")
+    FINE_TUNE_EPOCH = 20 # Epoch to start fine-tuning (unfreezing backbone)
+    FINE_TUNE_LR_FACTOR = 0.1 # Factor to reduce LR for fine-tuning
+
     for epoch in range(start_epoch, EPOCHS):
+        if epoch == FINE_TUNE_EPOCH:
+            print(f"Unfreezing ResNet backbone and reducing LR at epoch {epoch}...")
+            model.unfreeze()
+            # Re-initialize optimizer with a lower learning rate for fine-tuning
+            optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE * FINE_TUNE_LR_FACTOR)
+            # Re-initialize scheduler as well, if needed, or adjust its parameters
+            scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=LR_SCHEDULER_FACTOR, patience=LR_SCHEDULER_PATIENCE, min_lr=1e-7)
+
         model.train()
         train_loss = 0.0
         for batch_idx, (images, landmarks_true, cvm_stages_true) in enumerate(train_loader):
