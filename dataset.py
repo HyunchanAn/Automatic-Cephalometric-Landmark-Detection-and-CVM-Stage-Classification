@@ -33,11 +33,22 @@ class AarizDataset(Dataset):
         label_file_name = self.images_list[index].split(".")[0] + "." + "json"
         
         image = self.get_image(image_file_name)
+        original_height, original_width, _ = image.shape # Get original dimensions
+
         landmarks = self.get_landmarks(label_file_name)
         cvm_stage = self.get_cvm_stage(label_file_name)
 
         if self.transform:
             image = self.transform(image)
+            # Scale landmarks to the new image size (IMAGE_SIZE from config)
+            # Assuming self.transform includes transforms.Resize(IMAGE_SIZE)
+            target_height, target_width = IMAGE_SIZE # IMAGE_SIZE is (height, width)
+            
+            scale_x = target_width / original_width
+            scale_y = target_height / original_height
+            
+            landmarks[:, 0] = landmarks[:, 0] * scale_x
+            landmarks[:, 1] = landmarks[:, 1] * scale_y
         
         # Flatten landmarks for regression output
         landmarks = landmarks.flatten()

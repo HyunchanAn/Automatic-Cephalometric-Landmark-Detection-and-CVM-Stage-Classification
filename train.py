@@ -15,7 +15,7 @@ from config import CHECKPOINT_PATH, NUM_LANDMARKS, DATASET_PATH, IMAGE_SIZE
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 LEARNING_RATE = 0.001
 BATCH_SIZE = 16 # Adjust based on your system's memory
-EPOCHS = 50 # Number of epochs for training
+EPOCHS = 100 # Number of epochs for training
 LR_SCHEDULER_PATIENCE = 5 # Number of epochs with no improvement after which learning rate will be reduced
 LR_SCHEDULER_FACTOR = 0.1 # Factor by which the learning rate will be reduced
 

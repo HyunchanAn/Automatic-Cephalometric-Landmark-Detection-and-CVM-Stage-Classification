@@ -22,16 +22,15 @@ def main(args):
         print("Error: Checkpoints directory not found. Please train the model first.")
         return
 
-    checkpoint_list = os.listdir(CHECKPOINT_PATH)
-    if not checkpoint_list:
-        print("Error: No checkpoints found. Please train the model first.")
+    best_model_path = os.path.join(CHECKPOINT_PATH, "best_model.pth")
+    if not os.path.exists(best_model_path):
+        print(f"Error: best_model.pth not found at {best_model_path}. Please ensure the model is trained and saved.")
         return
 
-    latest_checkpoint = max(checkpoint_list, key=lambda f: int(f.split('_')[-1].split('.')[0]))
-    checkpoint = torch.load(os.path.join(CHECKPOINT_PATH, latest_checkpoint), map_location=DEVICE)
-    model.load_state_dict(checkpoint['model_state_dict'])
+    checkpoint = torch.load(best_model_path, map_location=DEVICE)
+    model.load_state_dict(checkpoint) # Directly load the state_dict
     model.eval()
-    print(f"Loaded checkpoint: {latest_checkpoint}")
+    print(f"Loaded best model from: {best_model_path}")
 
     # --- 3. Load Data ---
     # We need the original image for visualization, and the transformed image for the model
@@ -47,19 +46,19 @@ def main(args):
 
     # Create dataset object to get image path and labels
     # No transform here, as we load the original image ourselves
-    valid_dataset = AarizDataset(dataset_folder_path=DATASET_PATH, mode="VALID")
+    test_dataset = AarizDataset(dataset_folder_path=DATASET_PATH, mode="TEST", transform=model_transform)
     
-    if image_index >= len(valid_dataset):
-        print(f"Error: Index {image_index} is out of bounds for the validation set (size: {len(valid_dataset)}).")
+    if image_index >= len(test_dataset):
+        print(f"Error: Index {image_index} is out of bounds for the test set (size: {len(test_dataset)}).")
         return
 
     # Get the original image path and load it
-    image_name = valid_dataset.images_list[image_index]
-    image_path = os.path.join(valid_dataset.images_root_path, image_name)
+    image_name = test_dataset.images_list[image_index]
+    image_path = os.path.join(test_dataset.images_root_path, image_name)
     original_image = cv2.imread(image_path)
     
     # Get the labels and prepare the image for the model
-    image_for_model, landmarks_true_flat, cvm_stage_true_onehot = valid_dataset[image_index]
+    image_for_model, landmarks_true_flat, cvm_stage_true_onehot = test_dataset[image_index]
     image_tensor = model_transform(image_for_model).unsqueeze(0).to(DEVICE)
 
     # --- 4. Run Inference ---
@@ -82,17 +81,31 @@ def main(args):
     print("Creating visualization...")
     vis_image = original_image.copy()
     
+    # Get original image dimensions
+    original_height, original_width, _ = original_image.shape
+    model_height, model_width = IMAGE_SIZE
+
+    # Calculate scaling factors
+    scale_x = original_width / model_width
+    scale_y = original_height / model_height
+
     # Draw landmarks
     for i in range(NUM_LANDMARKS):
-        # True landmarks in Green
-        true_x, true_y = int(landmarks_true[i, 0]), int(landmarks_true[i, 1])
-        cv2.circle(vis_image, (true_x, true_y), radius=5, color=(0, 255, 0), thickness=-1)
+        # True landmarks in Green (scaled from IMAGE_SIZE to original)
+        true_x_scaled_float = landmarks_true[i, 0] * scale_x
+        true_y_scaled_float = landmarks_true[i, 1] * scale_y
+        true_x_scaled = int(true_x_scaled_float)
+        true_y_scaled = int(true_y_scaled_float)
+        cv2.circle(vis_image, (true_x_scaled, true_y_scaled), radius=10, color=(0, 255, 0), thickness=-1) # Increased radius
 
-        # Predicted landmarks in Red
-        pred_x, pred_y = int(landmarks_pred[i, 0]), int(landmarks_pred[i, 1])
-        cv2.circle(vis_image, (pred_x, pred_y), radius=5, color=(0, 0, 255), thickness=-1)
+        # Predicted landmarks in Red (scaled from IMAGE_SIZE to original)
+        pred_x_scaled_float = landmarks_pred[i, 0] * scale_x
+        pred_y_scaled_float = landmarks_pred[i, 1] * scale_y
+        pred_x_scaled = int(pred_x_scaled_float)
+        pred_y_scaled = int(pred_y_scaled_float)
+        cv2.circle(vis_image, (pred_x_scaled, pred_y_scaled), radius=10, color=(0, 0, 255), thickness=-1) # Increased radius
         # Draw line between true and predicted
-        cv2.line(vis_image, (true_x, true_y), (pred_x, pred_y), color=(255, 255, 0), thickness=1)
+        cv2.line(vis_image, (true_x_scaled, true_y_scaled), (pred_x_scaled, pred_y_scaled), color=(255, 255, 0), thickness=3) # Increased thickness # Increased thickness
 
 
     # Add text for CVM stages
