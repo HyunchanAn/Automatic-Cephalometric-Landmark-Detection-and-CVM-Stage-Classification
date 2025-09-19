@@ -9,12 +9,12 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 from dataset import AarizDataset
 from model import AdvancedCephNet
-from config import CHECKPOINT_PATH, NUM_LANDMARKS, DATASET_PATH, IMAGE_SIZE
+from config import CHECKPOINT_PATH, NUM_LANDMARKS, DATASET_PATH, IMAGE_SIZE, VALID_BATCH_SIZE, NUM_WORKERS, PIN_MEMORY
 
 # --- Hyperparameters ---
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 LEARNING_RATE = 0.001
-BATCH_SIZE = 16 # Adjust based on your system's memory
+BATCH_SIZE = 8 # Adjust based on your system's memory
 EPOCHS = 200 # Number of epochs for training
 LR_SCHEDULER_PATIENCE = 5 # Number of epochs with no improvement after which learning rate will be reduced
 LR_SCHEDULER_FACTOR = 0.1 # Factor by which the learning rate will be reduced
@@ -41,10 +41,10 @@ def main():
     ])
 
     train_dataset = AarizDataset(dataset_folder_path=DATASET_PATH, mode="TRAIN", transform=train_transform)
-    train_loader = DataLoader(dataset=train_dataset, batch_size=BATCH_SIZE, shuffle=True)
+    train_loader = DataLoader(dataset=train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY)
 
     valid_dataset = AarizDataset(dataset_folder_path=DATASET_PATH, mode="VALID", transform=valid_transform)
-    valid_loader = DataLoader(dataset=valid_dataset, batch_size=BATCH_SIZE, shuffle=False)
+    valid_loader = DataLoader(dataset=valid_dataset, batch_size=VALID_BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY)
 
     # --- 2. Initialize Model, Loss, and Optimizer ---
     print(f"Initializing model on {DEVICE}...")

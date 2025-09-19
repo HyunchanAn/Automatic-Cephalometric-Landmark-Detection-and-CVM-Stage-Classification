@@ -57,9 +57,11 @@ def main(args):
     image_path = os.path.join(test_dataset.images_root_path, image_name)
     original_image = cv2.imread(image_path)
     
-    # Get the labels and prepare the image for the model
+    # Get the transformed image tensor and labels from the dataset
+    # The 'model_transform' is applied inside the dataset's __getitem__ method
     image_for_model, landmarks_true_flat, cvm_stage_true_onehot = test_dataset[image_index]
-    image_tensor = model_transform(image_for_model).unsqueeze(0).to(DEVICE)
+    # Just add the batch dimension and send to the device
+    image_tensor = image_for_model.unsqueeze(0).to(DEVICE)
 
     # --- 4. Run Inference ---
     print("Running inference...")

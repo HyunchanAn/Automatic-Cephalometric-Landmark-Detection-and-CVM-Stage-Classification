@@ -9,24 +9,13 @@ class AdvancedCephNet(nn.Module):
     def __init__(self):
         super(AdvancedCephNet, self).__init__()
         # Load a pre-trained ResNet-18 model
-        self.resnet = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
+        self.backbone = models.resnet50(weights='ResNet50_Weights.DEFAULT')
+        # Remove the final fully connected layer and the avgpool layer
+        self.backbone = nn.Sequential(*list(self.backbone.children())[:-2])
 
-        # Freeze the parameters of the pre-trained layers
-        for param in self.resnet.parameters():
-            param.requires_grad = False
-
-        # Get the number of input features for the classifier
-        num_ftrs = self.resnet.fc.in_features
-
-        # Replace the final fully connected layer with our custom heads
-        # We don't need the original resnet.fc layer, so we can effectively remove it
-        self.resnet.fc = nn.Identity() # Identity layer to effectively remove the original fc layer
-
-        # Output head for landmark detection (regression)
-        self.landmark_head = nn.Linear(num_ftrs, NUM_LANDMARKS * 2)
-
-        # Output head for CVM stage classification
-        self.cvm_head = nn.Linear(num_ftrs, NUM_CVM_STAGES)
+        # --- Classifier Head ---
+        # This will need to be calculated based on the backbone and input image size
+        fc_input_size = 524288
 
     def forward(self, x):
         # Pass input through the ResNet base

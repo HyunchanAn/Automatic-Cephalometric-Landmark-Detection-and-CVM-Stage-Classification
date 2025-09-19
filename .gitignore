@@ -6,4 +6,10 @@ Aariz/
 Aariz.zip
 
 # Trained model files
+# 모든 .pth 파일을 무시하되,
 *.pth
+# checkpoints 폴더 안의 best_model.pth는 예외로 추적함
+!/checkpoints/best_model.pth
+
+# Backup of the best ResNet-18 model
+!resnet18_256x256_mre18.4.pth
