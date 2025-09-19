@@ -6,4 +6,9 @@ Aariz/
 Aariz.zip
 
 # Trained model files
+# 모든 .pth 파일을 무시하되,
 *.pth
+
+# ...백업된 특정 모델들만 예외적으로 추적함
+!resnet18_256x256_mre18.4.pth
+!resnet50_512x512_mre17.2.pth
