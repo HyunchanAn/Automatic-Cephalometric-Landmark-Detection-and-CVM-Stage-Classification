@@ -10,7 +10,7 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 from dataset_roi_cvm import RoiCvmDataset # Import the new CVM-only dataset
 from model_cvm_only import CvmOnlyNet # Import the new CVM-only model
 from config import (
-    CHECKPOINT_PATH, DATASET_PATH, IMAGE_SIZE_CVM as IMAGE_SIZE, # Use 224x224 image size
+    CHECKPOINT_PATH, ROI_DATASET_PATH, IMAGE_SIZE_CVM as IMAGE_SIZE, # Use 224x224 image size
     NUM_WORKERS, PIN_MEMORY, VALID_BATCH_SIZE
 )
 
@@ -35,7 +35,7 @@ def main():
 
     # --- 1. Load Dataset ---
     print(f"Loading dataset with image size {IMAGE_SIZE}...")
-    train_dataset = RoiCvmDataset(dataset_folder_path=DATASET_PATH, mode="TRAIN", image_size=IMAGE_SIZE)
+    train_dataset = RoiCvmDataset(dataset_folder_path=ROI_DATASET_PATH, mode="TRAIN", image_size=IMAGE_SIZE)
     train_loader = DataLoader(
         dataset=train_dataset, 
         batch_size=BATCH_SIZE, 
@@ -45,7 +45,7 @@ def main():
         persistent_workers=True if NUM_WORKERS > 0 else False
     )
 
-    valid_dataset = RoiCvmDataset(dataset_folder_path=DATASET_PATH, mode="VALID", image_size=IMAGE_SIZE)
+    valid_dataset = RoiCvmDataset(dataset_folder_path=ROI_DATASET_PATH, mode="VALID", image_size=IMAGE_SIZE)
     valid_loader = DataLoader(
         dataset=valid_dataset,
         batch_size=VALID_BATCH_SIZE,
