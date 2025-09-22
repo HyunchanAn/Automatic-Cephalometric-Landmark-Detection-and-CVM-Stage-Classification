@@ -150,3 +150,11 @@ NUM_CVM_STAGES = 6
 CHECKPOINT_PATH = "checkpoints"
 IMAGE_SIZE = (256, 256)
 DATASET_PATH = "Aariz"
+
+# DataLoader settings
+VALID_BATCH_SIZE = 16
+NUM_WORKERS = 2 # For CPU, a value of 2 or 4 is usually good
+PIN_MEMORY = True # Should be True for GPU, kept for consistency
+
+# Image size for the CVM-only experiment
+IMAGE_SIZE_CVM = (224, 224)
