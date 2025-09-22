@@ -7,3 +7,6 @@ Aariz.zip
 
 # Trained model files
 *.pth
+
+Aariz_ROI/
+.venv/

@@ -7,7 +7,7 @@ import numpy as np
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
-from dataset import AarizDataset
+from dataset_roi_cvm import RoiCvmDataset # Import the new CVM-only dataset
 from model_cvm_only import CvmOnlyNet # Import the new CVM-only model
 from config import (
     CHECKPOINT_PATH, DATASET_PATH, IMAGE_SIZE_CVM as IMAGE_SIZE, # Use 224x224 image size
@@ -35,9 +35,7 @@ def main():
 
     # --- 1. Load Dataset ---
     print(f"Loading dataset with image size {IMAGE_SIZE}...")
-    # Note: AarizDataset needs a small modification to accept a custom image size.
-    # For now, we assume it can be adapted or we will modify it.
-    train_dataset = AarizDataset(dataset_folder_path=DATASET_PATH, mode="TRAIN", image_size=IMAGE_SIZE)
+    train_dataset = RoiCvmDataset(dataset_folder_path=DATASET_PATH, mode="TRAIN", image_size=IMAGE_SIZE)
     train_loader = DataLoader(
         dataset=train_dataset, 
         batch_size=BATCH_SIZE, 
@@ -47,7 +45,7 @@ def main():
         persistent_workers=True if NUM_WORKERS > 0 else False
     )
 
-    valid_dataset = AarizDataset(dataset_folder_path=DATASET_PATH, mode="VALID", image_size=IMAGE_SIZE)
+    valid_dataset = RoiCvmDataset(dataset_folder_path=DATASET_PATH, mode="VALID", image_size=IMAGE_SIZE)
     valid_loader = DataLoader(
         dataset=valid_dataset,
         batch_size=VALID_BATCH_SIZE,
@@ -63,7 +61,6 @@ def main():
 
     cvm_loss_fn = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
-    # Monitor validation loss for LR scheduling
     scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=LR_SCHEDULER_FACTOR, patience=LR_SCHEDULER_PATIENCE, min_lr=1e-6)
 
     # --- 3. Load Checkpoint if exists ---
@@ -79,8 +76,7 @@ def main():
     for epoch in range(start_epoch, EPOCHS):
         model.train()
         train_loss = 0.0
-        # Note: We ignore the landmark output from the dataset loader
-        for batch_idx, (images, _, cvm_stages_true) in enumerate(train_loader):
+        for batch_idx, (images, cvm_stages_true) in enumerate(train_loader):
             images, cvm_stages_true = images.to(DEVICE), cvm_stages_true.to(DEVICE)
             
             optimizer.zero_grad()
@@ -96,7 +92,7 @@ def main():
         all_cvm_preds = []
         all_cvm_true = []
         with torch.no_grad():
-            for images, _, cvm_stages_true in valid_loader:
+            for images, cvm_stages_true in valid_loader:
                 images, cvm_stages_true = images.to(DEVICE), cvm_stages_true.to(DEVICE)
                 
                 cvm_stages_pred = model(images)

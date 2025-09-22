@@ -149,7 +149,7 @@ NUM_CVM_STAGES = 6
 
 CHECKPOINT_PATH = "checkpoints"
 IMAGE_SIZE = (256, 256)
-DATASET_PATH = "Aariz"
+DATASET_PATH = "Aariz_ROI"
 
 # DataLoader settings
 VALID_BATCH_SIZE = 16
@@ -158,3 +158,6 @@ PIN_MEMORY = True # Should be True for GPU, kept for consistency
 
 # Image size for the CVM-only experiment
 IMAGE_SIZE_CVM = (224, 224)
+
+# Path for the generated ROI dataset
+ROI_DATASET_PATH = "Aariz_ROI"
