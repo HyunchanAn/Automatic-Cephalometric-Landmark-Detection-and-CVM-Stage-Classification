@@ -1,0 +1,2 @@
+# Model: CvmOnlyNet (Backbone: ResNet-18), Loss: FocalLoss (gamma=2.0, weighted)
+epoch,train_loss,valid_loss,cvm_accuracy,cvm_f1

@@ -4,11 +4,13 @@ from torch.utils.data import DataLoader
 import argparse
 import os
 import numpy as np
+from datetime import datetime # Import datetime
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 from dataset_roi_cvm import RoiCvmDataset # Import the new CVM-only dataset
 from model_cvm_only import CvmOnlyNet # Import the new CVM-only model
+from focal_loss import FocalLoss # Import FocalLoss
 from config import (
     CHECKPOINT_PATH, ROI_DATASET_PATH, IMAGE_SIZE_CVM as IMAGE_SIZE, # Use 224x224 image size
     NUM_WORKERS, PIN_MEMORY, VALID_BATCH_SIZE
@@ -28,9 +30,11 @@ EARLY_STOP_PATIENCE = 15
 
 def main():
     # --- 0. Setup Logging ---
-    log_file_path = 'cvm_only_training_log.csv'
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M")
+    log_file_path = f'{timestamp}_cvm_only_training_log.csv'
     if not os.path.exists(log_file_path):
         with open(log_file_path, 'w') as f:
+            f.write(f'# Model: CvmOnlyNet (Backbone: ResNet-18), Loss: FocalLoss (gamma=2.0, weighted)\n')
             f.write('epoch,train_loss,valid_loss,cvm_accuracy,cvm_f1\n')
 
     # --- 1. Load Dataset ---
@@ -59,7 +63,10 @@ def main():
     print(f"Initializing CvmOnlyNet model on {DEVICE}...")
     model = CvmOnlyNet().to(DEVICE)
 
-    cvm_loss_fn = nn.CrossEntropyLoss()
+    # Define class weights to counteract class imbalance
+    class_weights = torch.tensor([6.6667, 3.3333, 3.4568, 0.6813, 0.3733, 0.8974], dtype=torch.float).to(DEVICE)
+    cvm_loss_fn = FocalLoss(alpha=class_weights, gamma=2.0)
+    
     optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
     scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=LR_SCHEDULER_FACTOR, patience=LR_SCHEDULER_PATIENCE, min_lr=1e-6)
 
@@ -71,6 +78,10 @@ def main():
     # Checkpoint logic can be added here if needed, simplified for now
 
     # --- 4. Training Loop ---
+    # Create checkpoint directory if it does not exist
+    if not os.path.exists(CHECKPOINT_PATH):
+        os.makedirs(CHECKPOINT_PATH)
+        
     early_stop_counter = 0
     print("Starting CVM-only training...")
     for epoch in range(start_epoch, EPOCHS):

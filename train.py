@@ -4,6 +4,7 @@ from torch.utils.data import DataLoader
 import argparse
 import os
 import numpy as np
+from datetime import datetime # Import datetime
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
@@ -36,9 +37,11 @@ def main(args):
     print(f"CVM Loss Weight: {args.cvm_weight}")
 
     # --- 0. Setup Logging ---
-    log_file_path = 'training_log.csv'
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M")
+    log_file_path = f'{timestamp}_training_log.csv'
     if not os.path.exists(log_file_path):
         with open(log_file_path, 'w') as f:
+            f.write(f'# Model: AdvancedCephNet (Backbone: ResNet-18), CVM Loss Weight: {args.cvm_weight}\n')
             f.write('epoch,train_loss,valid_loss,mre,cvm_accuracy,cvm_f1\n')
 
     # --- 1. Load Dataset ---
