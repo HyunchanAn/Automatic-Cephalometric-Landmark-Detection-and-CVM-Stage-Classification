@@ -7,7 +7,7 @@ class CvmOnlyNet(nn.Module):
     def __init__(self):
         super(CvmOnlyNet, self).__init__()
         # Load a pretrained ResNet-18 model
-        self.backbone = models.resnet18(pretrained=True)
+        self.backbone = models.resnet50(pretrained=True)
         
         # Get the number of input features for the classifier
         num_ftrs = self.backbone.fc.in_features

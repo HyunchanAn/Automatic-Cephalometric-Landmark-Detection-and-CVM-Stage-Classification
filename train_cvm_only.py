@@ -21,12 +21,12 @@ torch.set_num_threads(1)
 
 # --- Hyperparameters ---
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
-LEARNING_RATE = 0.001
+LEARNING_RATE = 0.0001
 BATCH_SIZE = 16
 EPOCHS = 100
 LR_SCHEDULER_PATIENCE = 5
 LR_SCHEDULER_FACTOR = 0.1
-EARLY_STOP_PATIENCE = 15
+EARLY_STOP_PATIENCE = 30
 
 def main():
     # --- 0. Setup Logging ---
@@ -34,7 +34,7 @@ def main():
     log_file_path = f'{timestamp}_cvm_only_training_log.csv'
     if not os.path.exists(log_file_path):
         with open(log_file_path, 'w') as f:
-            f.write(f'# Model: CvmOnlyNet (Backbone: ResNet-18), Loss: FocalLoss (gamma=2.0, weighted)\n')
+            f.write(f'# Model: CvmOnlyNet (Backbone: ResNet-50), Loss: FocalLoss (gamma=2.0, weighted)\n')
             f.write('epoch,train_loss,valid_loss,cvm_accuracy,cvm_f1\n')
 
     # --- 1. Load Dataset ---

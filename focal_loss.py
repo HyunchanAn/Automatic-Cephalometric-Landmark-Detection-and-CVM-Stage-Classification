@@ -24,7 +24,14 @@ class FocalLoss(nn.Module):
         pt = torch.exp(-ce_loss)
 
         # Calculate Focal Loss
-        focal_loss = self.alpha * (1 - pt)**self.gamma * ce_loss
+        if isinstance(self.alpha, torch.Tensor):
+            # Use the alpha for the specific target class if it's a tensor
+            alpha_t = self.alpha.to(targets.device)[targets]
+        else:
+            # Use a single scalar alpha for all classes
+            alpha_t = self.alpha
+
+        focal_loss = alpha_t * (1 - pt)**self.gamma * ce_loss
 
         if self.reduction == 'mean':
             return focal_loss.mean()
