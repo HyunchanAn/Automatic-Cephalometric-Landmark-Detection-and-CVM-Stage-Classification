@@ -25,6 +25,8 @@ class RoiCvmDataset(Dataset):
                 A.Resize(height=image_size[0], width=image_size[1]),
                 A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=0.7),
                 A.GaussNoise(p=0.5),
+                A.GridDistortion(p=0.5, distort_limit=0.1),
+                A.OpticalDistortion(p=0.5, distort_limit=0.1, shift_limit=0.1),
                 A.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
                 ToTensorV2(),
             ])

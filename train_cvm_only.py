@@ -21,7 +21,7 @@ torch.set_num_threads(1)
 
 # --- Hyperparameters ---
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
-LEARNING_RATE = 0.0001
+LEARNING_RATE = 0.00001
 BATCH_SIZE = 16
 EPOCHS = 100
 LR_SCHEDULER_PATIENCE = 5
