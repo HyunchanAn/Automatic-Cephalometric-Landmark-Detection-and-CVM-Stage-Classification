@@ -1,0 +1,2 @@
+# Model: HeatmapModel (512px), Loss: MSELoss, Fine-tuned
+epoch,train_loss,valid_mre,learning_rate

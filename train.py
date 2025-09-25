@@ -7,7 +7,7 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 from datetime import datetime
 
 from dataset import HeatmapDataset
-from model import HeatmapModel
+from model import UNetHeatmapModel # Use the new UNet model
 from config import (
     DATASET_PATH, 
     IMAGE_SIZE, 
@@ -21,16 +21,15 @@ from config import (
 # --- Hyperparameters ---
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 LEARNING_RATE = 1e-4
-BATCH_SIZE = 8
-EPOCHS = 100
-HEATMAP_OUTPUT_SIZE = (64, 64)
-HEATMAP_SIGMA = 2
+BATCH_SIZE = 4 # Keep small for 512x512 images
+EPOCHS = 150
+HEATMAP_OUTPUT_SIZE = (128, 128) # Corresponds to 512x512 input
+HEATMAP_SIGMA = 2 # Best sigma from previous experiments
 LR_SCHEDULER_PATIENCE = 5
 LR_SCHEDULER_FACTOR = 0.2
-EARLY_STOP_PATIENCE = 15
+EARLY_STOP_PATIENCE = 20
 
-# Fine-tuning settings
-PRETRAINED_MODEL_PATH = os.path.join(CHECKPOINT_PATH, 'heatmap_resnet50_frozen_mre38.4.pth')
+# --- Fine-tuning settings for the UNet run ---
 FINE_TUNE_EPOCH = 20
 FINE_TUNE_LR = 1e-5
 
@@ -56,9 +55,9 @@ def get_coords_from_heatmaps(heatmaps):
 def main():
     # --- 1. Setup Logging ---
     timestamp = datetime.now().strftime("%Y%m%d_%H%M")
-    log_file_path = f'{timestamp}_heatmap_finetune_log.csv'
+    log_file_path = f'{timestamp}_unet_512px_log.csv' # New log file name
     with open(log_file_path, 'w') as f:
-        f.write('# Model: HeatmapModel (Backbone: ResNet-50), Loss: MSELoss, Fine-tuned\n')
+        f.write('# Model: UNetHeatmapModel (512px), Loss: MSELoss, Fine-tuned\n')
         f.write('epoch,train_loss,valid_mre,learning_rate\n')
 
     # --- 2. Load Dataset ---
@@ -70,18 +69,14 @@ def main():
     valid_loader = DataLoader(dataset=valid_dataset, batch_size=VALID_BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY)
 
     # --- 3. Initialize Model, Loss, and Optimizer ---
-    print(f"Initializing HeatmapModel on {DEVICE}...")
-    model = HeatmapModel(num_landmarks=NUM_LANDMARKS).to(DEVICE)
+    print(f"Initializing UNetHeatmapModel on {DEVICE}...")
+    model = UNetHeatmapModel(num_landmarks=NUM_LANDMARKS).to(DEVICE)
     loss_fn = nn.MSELoss()
-    optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=LEARNING_RATE)
-    scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=LR_SCHEDULER_FACTOR, patience=LR_SCHEDULER_PATIENCE, min_lr=1e-7)
 
-    # Load weights from the feature extraction phase if available
-    if os.path.exists(PRETRAINED_MODEL_PATH):
-        print(f"Loading pre-trained weights from {PRETRAINED_MODEL_PATH}")
-        model.load_state_dict(torch.load(PRETRAINED_MODEL_PATH, map_location=DEVICE))
-    else:
-        print("No pre-trained model found. Starting from scratch.")
+    # Start training from scratch with a frozen backbone
+    optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=LEARNING_RATE)
+    scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=LR_SCHEDULER_FACTOR, patience=LR_SCHEDULER_PATIENCE, min_lr=1e-8)
+    print("Starting training from scratch. Backbone is frozen.")
 
     # --- 4. Training Loop ---
     best_mre = float('inf')
@@ -89,11 +84,11 @@ def main():
     fine_tuning_activated = False
     os.makedirs(CHECKPOINT_PATH, exist_ok=True)
 
-    print("Starting heatmap model training...")
+    print("Starting UNet model training...")
     for epoch in range(EPOCHS):
         # --- Fine-tuning activation ---
         if not fine_tuning_activated and epoch >= FINE_TUNE_EPOCH:
-            print("\n--- Starting fine-tuning phase ---")
+            print("\n--- Starting fine-tuning phase for UNet model ---")
             model.unfreeze_backbone()
             optimizer = torch.optim.Adam(model.parameters(), lr=FINE_TUNE_LR)
             scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=LR_SCHEDULER_FACTOR, patience=LR_SCHEDULER_PATIENCE, min_lr=1e-8)
@@ -140,7 +135,7 @@ def main():
         if mre < best_mre:
             best_mre = mre
             early_stop_counter = 0
-            best_model_save_path = os.path.join(CHECKPOINT_PATH, 'best_heatmap_model_finetuned.pth')
+            best_model_save_path = os.path.join(CHECKPOINT_PATH, 'best_unet_model_512px.pth')
             torch.save(model.state_dict(), best_model_save_path)
             print(f"  >>> New best model saved with MRE: {best_mre:.4f}")
         else:

@@ -148,7 +148,7 @@ NUM_LANDMARKS = 29
 NUM_CVM_STAGES = 6
 
 CHECKPOINT_PATH = "checkpoints"
-IMAGE_SIZE = (256, 256)
+IMAGE_SIZE = (512, 512)
 DATASET_PATH = "Aariz"
 
 # Dataloader settings

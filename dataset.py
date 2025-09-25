@@ -30,7 +30,7 @@ class HeatmapDataset(Dataset):
                 A.Resize(height=self.image_size[0], width=self.image_size[1]),
                 A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=0.7),
                 A.GaussNoise(p=0.5),
-                A.Affine(scale=(0.8, 1.2), translate_percent=(-0.1, 0.1), rotate=(-15, 15), p=0.7),
+                A.Affine(scale=(0.9, 1.1), translate_percent=(-0.05, 0.05), rotate=(-10, 10), p=0.7),
                 A.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
                 ToTensorV2(),
             ], keypoint_params=A.KeypointParams(format='xy', remove_invisible=False))
