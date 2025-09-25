@@ -150,3 +150,8 @@ NUM_CVM_STAGES = 6
 CHECKPOINT_PATH = "checkpoints"
 IMAGE_SIZE = (256, 256)
 DATASET_PATH = "Aariz"
+
+# Dataloader settings
+VALID_BATCH_SIZE = 16
+NUM_WORKERS = 2
+PIN_MEMORY = True

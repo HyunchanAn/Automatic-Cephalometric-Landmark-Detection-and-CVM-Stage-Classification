@@ -4,6 +4,7 @@ __pycache__/
 # Large dataset folder - should be downloaded separately
 Aariz/
 Aariz.zip
+Aariz_ROI/
 
 # Trained model files
 *.pth

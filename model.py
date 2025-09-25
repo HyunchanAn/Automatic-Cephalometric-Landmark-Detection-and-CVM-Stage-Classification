@@ -1,88 +1,65 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from torchvision import models
 
-from config import NUM_CVM_STAGES, NUM_LANDMARKS
+from config import NUM_LANDMARKS
 
-class AdvancedCephNet(nn.Module):
-    def __init__(self):
-        super(AdvancedCephNet, self).__init__()
-        # Load a pre-trained ResNet-18 model
-        self.resnet = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
+class HeatmapModel(nn.Module):
+    def __init__(self, num_landmarks=NUM_LANDMARKS, pretrained=True):
+        super(HeatmapModel, self).__init__()
+        
+        # Load a pre-trained ResNet-50 model
+        resnet = models.resnet50(weights=models.ResNet50_Weights.DEFAULT if pretrained else None)
+        
+        # Backbone: Use ResNet-50 up to the last convolutional block
+        self.backbone = nn.Sequential(*list(resnet.children())[:-2])
+        
+        # Freeze backbone by default
+        self.freeze_backbone()
 
-        # Freeze the parameters of the pre-trained layers
-        for param in self.resnet.parameters():
+        # Upsampling head
+        self.upsampling_head = nn.Sequential(
+            # Input: 2048 channels from ResNet-50
+            nn.ConvTranspose2d(2048, 256, kernel_size=4, stride=2, padding=1),
+            nn.BatchNorm2d(256),
+            nn.ReLU(inplace=True),
+            
+            nn.ConvTranspose2d(256, 128, kernel_size=4, stride=2, padding=1),
+            nn.BatchNorm2d(128),
+            nn.ReLU(inplace=True),
+            
+            nn.ConvTranspose2d(128, 64, kernel_size=4, stride=2, padding=1),
+            nn.BatchNorm2d(64),
+            nn.ReLU(inplace=True)
+        )
+        
+        # Final layer to produce the heatmaps
+        self.final_layer = nn.Conv2d(
+            in_channels=64, 
+            out_channels=num_landmarks, 
+            kernel_size=1, 
+            stride=1, 
+            padding=0
+        )
+
+    def forward(self, x):
+        # Pass input through the backbone
+        features = self.backbone(x)
+        
+        # Upsample the features
+        upsampled_features = self.upsampling_head(features)
+        
+        # Generate heatmaps
+        heatmaps = self.final_layer(upsampled_features)
+        
+        return heatmaps
+
+    def freeze_backbone(self):
+        """Freezes the parameters of the ResNet backbone."""
+        for param in self.backbone.parameters():
             param.requires_grad = False
 
-        # Get the number of input features for the classifier
-        num_ftrs = self.resnet.fc.in_features
-
-        # Replace the final fully connected layer with our custom heads
-        # We don't need the original resnet.fc layer, so we can effectively remove it
-        self.resnet.fc = nn.Identity() # Identity layer to effectively remove the original fc layer
-
-        # Output head for landmark detection (regression)
-        self.landmark_head = nn.Linear(num_ftrs, NUM_LANDMARKS * 2)
-
-        # Output head for CVM stage classification
-        self.cvm_head = nn.Linear(num_ftrs, NUM_CVM_STAGES)
-
-    def forward(self, x):
-        # Pass input through the ResNet base
-        features = self.resnet(x)
-        # The features are already flattened by the adaptive pooling layer in ResNet
-        
-        # Get the outputs from the two heads
-        landmarks = self.landmark_head(features)
-        cvm_stage = self.cvm_head(features)
-
-        return landmarks, cvm_stage
-
-    def unfreeze(self):
-        """Unfreezes the parameters of the ResNet base for fine-tuning."""
-        for param in self.resnet.parameters():
+    def unfreeze_backbone(self):
+        """Unfreezes the parameters of the ResNet backbone for fine-tuning."""
+        for param in self.backbone.parameters():
             param.requires_grad = True
-
-
-class CephNet(nn.Module):
-    def __init__(self):
-        super(CephNet, self).__init__()
-        # This is a very basic CNN architecture. 
-        # You can replace this with a more advanced one like ResNet, VGG, etc.
-        
-        # Convolutional layers
-        self.conv1 = nn.Conv2d(3, 16, kernel_size=3, padding=1)
-        self.conv2 = nn.Conv2d(16, 32, kernel_size=3, padding=1)
-        self.conv3 = nn.Conv2d(32, 64, kernel_size=3, padding=1)
-        self.pool = nn.MaxPool2d(2, 2)
-
-        self.fc_input_size = 65536
-
-        # Fully connected layers for the shared part of the network
-        self.fc1 = nn.Linear(self.fc_input_size, 512)
-
-        # Output head for landmark detection (regression)
-        self.landmark_head = nn.Linear(512, 29 * 2)
-
-        # Output head for CVM stage classification
-        # 6 CVM stages
-        self.cvm_head = nn.Linear(512, 6)
-
-    def forward(self, x):
-        # Convolutional part
-        x = self.pool(F.relu(self.conv1(x)))
-        x = self.pool(F.relu(self.conv2(x)))
-        x = self.pool(F.relu(self.conv3(x)))
-
-        # Flatten the feature map
-        x = x.view(-1, self.fc_input_size)
-
-        # Fully connected part
-        x = F.relu(self.fc1(x))
-
-        # Get the outputs from the two heads
-        landmarks = self.landmark_head(x)
-        cvm_stage = self.cvm_head(x)
-
-        return landmarks, cvm_stage

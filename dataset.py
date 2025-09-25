@@ -1,101 +1,136 @@
-from config import *
 import numpy as np
 import json
 import cv2
 import os
 import torch
 from torch.utils.data import Dataset
-from torchvision import transforms
+import albumentations as A
+from albumentations.pytorch import ToTensorV2
 
-class AarizDataset(Dataset):
+from config import (
+    NUM_LANDMARKS,
+    IMAGE_SIZE
+)
+
+class HeatmapDataset(Dataset):
     
-    def __init__(self, dataset_folder_path: str, mode: str, transform=None):
+    def __init__(self, dataset_folder_path: str, mode: str, output_size: tuple = (64, 64), sigma: int = 2):
         
-        if (mode == "TRAIN") or (mode == "VALID") or (mode == "TEST"):
-            mode = mode.lower()
-        else:
+        if mode.upper() not in ["TRAIN", "VALID", "TEST"]:
             raise ValueError("mode could only be TRAIN, VALID or TEST")
-        
-        self.transform = transform
-        
-        self.images_root_path = os.path.join(dataset_folder_path, mode, "Cephalograms")
-        self.labels_root_path = os.path.join(dataset_folder_path, mode, "Annotations")
-        
+        self.mode = mode.lower()
+
+        self.image_size = IMAGE_SIZE
+        self.output_size = output_size
+        self.sigma = sigma
+
+        # Define Albumentations pipelines
+        if self.mode == 'train':
+            self.transform = A.Compose([
+                A.Resize(height=self.image_size[0], width=self.image_size[1]),
+                A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=0.7),
+                A.GaussNoise(p=0.5),
+                A.Affine(scale=(0.8, 1.2), translate_percent=(-0.1, 0.1), rotate=(-15, 15), p=0.7),
+                A.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
+                ToTensorV2(),
+            ], keypoint_params=A.KeypointParams(format='xy', remove_invisible=False))
+        else: # For 'valid' and 'test'
+            self.transform = A.Compose([
+                A.Resize(height=self.image_size[0], width=self.image_size[1]),
+                A.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
+                ToTensorV2(),
+            ], keypoint_params=A.KeypointParams(format='xy', remove_invisible=False))
+
+        self.images_root_path = os.path.join(dataset_folder_path, self.mode, "Cephalograms")
+        self.labels_root_path = os.path.join(dataset_folder_path, self.mode, "Annotations")
         self.senior_annotations_root = os.path.join(self.labels_root_path, "Cephalometric Landmarks", "Senior Orthodontists")
         self.junior_annotations_root = os.path.join(self.labels_root_path, "Cephalometric Landmarks", "Junior Orthodontists")
-        self.cvm_annotations_root = os.path.join(self.labels_root_path, "CVM Stages")
         
         self.images_list = os.listdir(self.images_root_path)
         
-    
     def __getitem__(self, index):
         image_file_name = self.images_list[index]
-        label_file_name = self.images_list[index].split(".")[0] + "." + "json"
+        label_file_name = image_file_name.split(".")[0] + ".json"
         
-        image = self.get_image(image_file_name)
-        original_height, original_width, _ = image.shape # Get original dimensions
+        image = self._get_image(image_file_name)
+        landmarks = self._get_landmarks(label_file_name)
 
-        landmarks = self.get_landmarks(label_file_name)
-        cvm_stage = self.get_cvm_stage(label_file_name)
+        # Apply albumentations transform
+        transformed = self.transform(image=image, keypoints=landmarks)
+        image = transformed['image']
+        landmarks = transformed['keypoints']
 
-        if self.transform:
-            image = self.transform(image)
-            # Scale landmarks to the new image size (IMAGE_SIZE from config)
-            # Assuming self.transform includes transforms.Resize(IMAGE_SIZE)
-            target_height, target_width = IMAGE_SIZE # IMAGE_SIZE is (height, width)
-            
-            scale_x = target_width / original_width
-            scale_y = target_height / original_height
-            
-            landmarks[:, 0] = landmarks[:, 0] * scale_x
-            landmarks[:, 1] = landmarks[:, 1] * scale_y
+        # Generate heatmaps
+        heatmaps = self._generate_heatmaps(landmarks)
         
-        # Flatten landmarks for regression output
-        landmarks = landmarks.flatten()
+        return image, torch.tensor(heatmaps, dtype=torch.float32), torch.tensor(landmarks, dtype=torch.float32)
 
-        return image, torch.from_numpy(landmarks).float(), torch.from_numpy(cvm_stage).float()
-    
-    def get_image(self, file_name: str):
+    def _generate_heatmaps(self, landmarks):
+        heatmaps = np.zeros((NUM_LANDMARKS, self.output_size[0], self.output_size[1]), dtype=np.float32)
+        scale_x = self.output_size[1] / self.image_size[1]
+        scale_y = self.output_size[0] / self.image_size[0]
+
+        for i, (x, y) in enumerate(landmarks):
+            # Scale landmark coordinates to heatmap size
+            hm_x = int(x * scale_x)
+            hm_y = int(y * scale_y)
+
+            if 0 <= hm_x < self.output_size[1] and 0 <= hm_y < self.output_size[0]:
+                heatmaps[i] = self._create_gaussian_heatmap(hm_x, hm_y)
+        
+        return heatmaps
+
+    def _create_gaussian_heatmap(self, center_x, center_y):
+        heatmap = np.zeros((self.output_size[0], self.output_size[1]), dtype=np.float32)
+        tmp_size = self.sigma * 3
+        
+        # Generate gaussian region
+        size = 2 * tmp_size + 1
+        x = np.arange(0, size, 1, np.float32)
+        y = x[:, np.newaxis]
+        x0 = y0 = size // 2
+        g = np.exp(-((x - x0) ** 2 + (y - y0) ** 2) / (2 * self.sigma ** 2))
+
+        # Usable gaussian range
+        left = min(center_x, tmp_size)
+        right = min(self.output_size[1] - center_x, tmp_size + 1)
+        top = min(center_y, tmp_size)
+        bottom = min(self.output_size[0] - center_y, tmp_size + 1)
+
+        # Cropped gaussian
+        cropped_g = g[y0 - top:y0 + bottom, x0 - left:x0 + right]
+        # Target heatmap region
+        paste_y1, paste_y2 = center_y - top, center_y + bottom
+        paste_x1, paste_x2 = center_x - left, center_x + right
+
+        heatmap[paste_y1:paste_y2, paste_x1:paste_x2] = cropped_g
+        return heatmap
+
+    def _get_image(self, file_name: str):
         file_path = os.path.join(self.images_root_path, file_name)
-        
         image = cv2.imread(file_path)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        
         return np.array(image, dtype=np.uint8)
     
-    
-    def get_landmarks(self, file_name):
+    def _get_landmarks(self, file_name):
         file_path = os.path.join(self.senior_annotations_root, file_name)
         with open(file_path, mode="r") as file:
             senior_annotations = json.load(file)
         
         senior_annotations = [[landmark["value"]["x"], landmark["value"]["y"]] for landmark in senior_annotations["landmarks"]]
-        senior_annotations = np.array(senior_annotations, dtype=np.float32)
         
         file_path = os.path.join(self.junior_annotations_root, file_name)
         with open(file_path, mode="r") as file:
             junior_annotations = json.load(file)
 
         junior_annotations = [[landmark["value"]["x"], landmark["value"]["y"]] for landmark in junior_annotations["landmarks"]]
-        junior_annotations = np.array(junior_annotations, dtype=np.float32)
         
-        landmarks = np.zeros(shape=(NUM_LANDMARKS, 2), dtype=np.float64)
-        landmarks[:, 0] = np.ceil((0.5) * (junior_annotations[:, 0] + senior_annotations[:, 0]))
-        landmarks[:, 1] = np.ceil((0.5) * (junior_annotations[:, 1] + senior_annotations[:, 1]))
+        landmarks = np.zeros(shape=(NUM_LANDMARKS, 2), dtype=np.float32)
+        for i in range(NUM_LANDMARKS):
+            landmarks[i, 0] = np.ceil((0.5) * (junior_annotations[i][0] + senior_annotations[i][0]))
+            landmarks[i, 1] = np.ceil((0.5) * (junior_annotations[i][1] + senior_annotations[i][1]))
         
-        return np.array(landmarks, dtype=np.float32)
-    
-    def get_cvm_stage(self, file_name):
-        file_path = os.path.join(self.cvm_annotations_root, file_name)
-        
-        with open(file_path, mode="r") as file:
-            cvm_annotations = json.load(file)
-        
-        cvm_stage_value = cvm_annotations["cvm_stage"]["value"]
-        cvm_stage = np.zeros(shape=(NUM_CVM_STAGES, ))
-        cvm_stage[cvm_stage_value - 1] = 1.0
-        
-        return np.array(cvm_stage, dtype=np.float32)
+        return landmarks
     
     def __len__(self):
         return len(self.images_list)
