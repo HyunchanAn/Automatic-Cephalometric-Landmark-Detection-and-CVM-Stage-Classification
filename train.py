@@ -36,7 +36,7 @@ PRETRAINED_MODEL_PATH = 'model_heatmap_resnet50_finetuned_mre4.5.pth'
 FINE_TUNE_EPOCH = 15 # Unfreeze backbone after 15 epochs
 FINE_TUNE_LR = 1e-5
 
-def get_coords_from_heatmaps(heatmaps):
+def get_coords_from_heatmaps(heatmaps, image_size, heatmap_size):
     """Convert a batch of heatmaps to landmark coordinates."""
     batch_size, num_landmarks, h, w = heatmaps.shape
     heatmaps_reshaped = heatmaps.reshape(batch_size, num_landmarks, -1)
@@ -44,8 +44,8 @@ def get_coords_from_heatmaps(heatmaps):
     y_coords = max_indices // w
     x_coords = max_indices % w
     coords = torch.stack([x_coords, y_coords], dim=2).float()
-    scale_x = IMAGE_SIZE[1] / w
-    scale_y = IMAGE_SIZE[0] / h
+    scale_x = image_size[1] / w
+    scale_y = image_size[0] / h
     coords[:, :, 0] *= scale_x
     coords[:, :, 1] *= scale_y
     return coords
@@ -60,10 +60,10 @@ def main():
 
     # --- 2. Load Dataset ---
     print(f"Loading dataset with image size {IMAGE_SIZE} and heatmap size {HEATMAP_OUTPUT_SIZE}...")
-    train_dataset = HeatmapDataset(dataset_folder_path=DATASET_PATH, mode="TRAIN", output_size=HEATMAP_OUTPUT_SIZE, sigma=HEATMAP_SIGMA)
+    train_dataset = HeatmapDataset(dataset_folder_path=DATASET_PATH, mode="TRAIN", image_size=IMAGE_SIZE, output_size=HEATMAP_OUTPUT_SIZE, sigma=HEATMAP_SIGMA)
     train_loader = DataLoader(dataset=train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY)
 
-    valid_dataset = HeatmapDataset(dataset_folder_path=DATASET_PATH, mode="VALID", output_size=HEATMAP_OUTPUT_SIZE, sigma=HEATMAP_SIGMA)
+    valid_dataset = HeatmapDataset(dataset_folder_path=DATASET_PATH, mode="VALID", image_size=IMAGE_SIZE, output_size=HEATMAP_OUTPUT_SIZE, sigma=HEATMAP_SIGMA)
     valid_loader = DataLoader(dataset=valid_dataset, batch_size=VALID_BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS, pin_memory=PIN_MEMORY)
 
     # --- 3. Initialize Model, Loss, and Optimizer ---
@@ -136,7 +136,7 @@ def main():
             for images, _, landmarks_true in valid_loader:
                 images, landmarks_true = images.to(DEVICE), landmarks_true.to(DEVICE)
                 heatmaps_pred = model(images)
-                coords_pred = get_coords_from_heatmaps(heatmaps_pred)
+                coords_pred = get_coords_from_heatmaps(heatmaps_pred, IMAGE_SIZE, HEATMAP_OUTPUT_SIZE)
                 radial_error = torch.sqrt(((coords_pred - landmarks_true) ** 2).sum(dim=2))
                 total_radial_error += radial_error.mean(dim=1).sum().item()
 

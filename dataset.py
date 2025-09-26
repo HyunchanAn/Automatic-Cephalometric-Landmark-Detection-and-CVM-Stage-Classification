@@ -7,20 +7,17 @@ from torch.utils.data import Dataset
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
 
-from config import (
-    NUM_LANDMARKS,
-    IMAGE_SIZE
-)
+from config import NUM_LANDMARKS # IMAGE_SIZE is now passed as an argument
 
 class HeatmapDataset(Dataset):
     
-    def __init__(self, dataset_folder_path: str, mode: str, output_size: tuple = (64, 64), sigma: int = 2):
+    def __init__(self, dataset_folder_path: str, mode: str, image_size: tuple, output_size: tuple = (64, 64), sigma: int = 2):
         
         if mode.upper() not in ["TRAIN", "VALID", "TEST"]:
             raise ValueError("mode could only be TRAIN, VALID or TEST")
         self.mode = mode.lower()
 
-        self.image_size = IMAGE_SIZE
+        self.image_size = image_size # Use passed image_size
         self.output_size = output_size
         self.sigma = sigma
 

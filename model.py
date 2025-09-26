@@ -62,3 +62,28 @@ class UNetHeatmapModel(nn.Module):
         for layer in [self.layer0, self.layer1, self.layer2, self.layer3, self.layer4]:
             for param in layer.parameters():
                 param.requires_grad = True
+
+# --- Previous HeatmapModel (for loading old checkpoints) ---
+class HeatmapModel(nn.Module):
+    def __init__(self, num_landmarks=NUM_LANDMARKS, pretrained=True):
+        super(HeatmapModel, self).__init__()
+        resnet = models.resnet50(weights=models.ResNet50_Weights.DEFAULT if pretrained else None)
+        self.backbone = nn.Sequential(*list(resnet.children())[:-2])
+        self.upsampling_head = nn.Sequential(
+            nn.ConvTranspose2d(2048, 256, kernel_size=4, stride=2, padding=1),
+            nn.BatchNorm2d(256),
+            nn.ReLU(inplace=True),
+            nn.ConvTranspose2d(256, 128, kernel_size=4, stride=2, padding=1),
+            nn.BatchNorm2d(128),
+            nn.ReLU(inplace=True),
+            nn.ConvTranspose2d(128, 64, kernel_size=4, stride=2, padding=1),
+            nn.BatchNorm2d(64),
+            nn.ReLU(inplace=True)
+        )
+        self.final_layer = nn.Conv2d(64, num_landmarks, kernel_size=1, stride=1, padding=0)
+
+    def forward(self, x):
+        features = self.backbone(x)
+        upsampled_features = self.upsampling_head(features)
+        heatmaps = self.final_layer(upsampled_features)
+        return heatmaps
