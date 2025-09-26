@@ -1,4 +1,0 @@
-# Model: UNetHeatmapModel (512px), Loss: MSELoss, Fine-tuned
-epoch,train_loss,valid_mre,learning_rate
-1,0.009244,232.7056,0.0001
-2,0.001665,202.3782,0.0001
