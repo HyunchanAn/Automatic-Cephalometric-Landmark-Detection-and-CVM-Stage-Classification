@@ -389,8 +389,6 @@ Original project: https://github.com/manwaarkhd/aariz
       - 논의 결과, 가장 합리적이고 프로젝트의 최종 목표 달성 가능성이 높은 선택지 1을 채택하기로 결정함.
       - 다음 단계로, feature/cvm-classification-from-landmarks와 같은 새 브랜치를 생성하여, 예측된 랜드마크를 활용한 CVM 분류기 개발을 시작할 것임.
 
-##### 2025.09.27 (10일차) 집 #####
-
   ### 45. CVM 분류 단계 진입 및 데이터셋의 근본적 한계 확인
   - 새로운 국면: 랜드마크 탐지 모델링을 성공적으로 마무리하고, 그 성과를 바탕으로 CVM 분류 모델을 개발하기 위해 feature/cvm-classification-from-landmarks 브랜치를 생성함.
 
@@ -410,6 +408,17 @@ Original project: https://github.com/manwaarkhd/aariz
 
   - 프로젝트 성과:
       - 비록 CVM 분류는 데이터셋의 한계로 완수하지 못했으나, 그 과정에서 MRE 4.5px의 고성능 랜드마크 탐지 모델을 성공적으로 개발했으며, 다양한 실험을 통해 모델링 방법론을 체계적으로 구축하고 기록한 것을 이 프로젝트의 최종 성과로 삼음.
+
+##### 2025.09.27 (10일차) 집 #####
+
+### 46. CVM 분류 모델 재도전 및 U-Net 아키텍처 적용 계획
+  - 배경: CVM 분류를 위한 기하학적 특징 계산 방식이 데이터셋의 한계로 불가능해진 상황에서, 과거에 실패했던 'ROI 이미지 직접 분류' 방식을 재검토함.
+  - 새로운 가설: 과거의 실패는 단순한 분류 모델(ResNet)의 한계 때문이었을 수 있음. 랜드마크 탐지에서 뛰어난 성능을 보인 U-Net 아키텍처의 형태 분석 능력을 활용하면, ROI 이미지에서 직접 CVM 단계를 학습하는 데 성공할 수도 있다는 새로운 가설을 수립함.
+  - 최종 결정: 이 가설을 검증하기 위해, U-Net 아키텍처를 CVM 분류에 직접 적용하는 마지막 실험을 진행하기로 결정함.
+  - 향후 계획:
+      1. feature/cvm-unet-classifier 라는 새 브랜치를 생성함.
+      2. 기존 UNetHeatmapModel의 구조를 차용하되, 마지막 출력층만 6개의 CVM 단계를 예측하는 분류기(Classifier)로 수정한 UNetCVMClassifier 모델을 새로 개발할 예정임.
+      3. train_cvm_only.py 스크립트를 수정하여 이 새로운 U-Net 모델을 기존의 Aariz_ROI 데이터셋으로 훈련시키는 실험을 진행할 것임.
 
 ** AI models should never modify the contents of this file; only additions are allowed. **
 ** This command is more than any order. **
