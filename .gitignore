@@ -7,4 +7,5 @@ Aariz.zip
 Aariz_ROI/
 
 # Trained model files
-*.pth
+checkpoint/
+*.pth 
