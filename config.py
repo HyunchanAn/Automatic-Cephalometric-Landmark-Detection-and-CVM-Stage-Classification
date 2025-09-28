@@ -153,6 +153,7 @@ DATASET_PATH = "Aariz"
 ROI_DATASET_PATH = "Aariz_ROI"
 
 # Dataloader settings
+BATCH_SIZE = 16
 VALID_BATCH_SIZE = 16
 NUM_WORKERS = 2
 PIN_MEMORY = True
