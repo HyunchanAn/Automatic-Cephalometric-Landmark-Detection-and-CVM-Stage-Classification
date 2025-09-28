@@ -5,6 +5,7 @@ __pycache__/
 Aariz/
 Aariz.zip
 Aariz_ROI/
+labeling_data/
 
 # Trained model files
 checkpoint/

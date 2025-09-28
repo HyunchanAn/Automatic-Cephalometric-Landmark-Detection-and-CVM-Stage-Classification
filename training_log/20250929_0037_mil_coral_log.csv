@@ -1,0 +1,2 @@
+# Plan 1: AttentionMIL with CORAL Loss
+epoch,train_loss,valid_loss,f1_macro,kappa,mae,learning_rate
