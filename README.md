@@ -239,3 +239,10 @@ pip install ultralytics
 
 ## 가중치 백업 안내
 오래된 이전 가중치 파일(Legacy Backups)은 통일성을 위해 Emergency_Weights_Vault/Dental_001/Backup_Checkpoints 폴더에 별도로 안전하게 보존되어 있습니다.
+
+## 연구용 실행 주의사항
+- 기본 실행 주소: 127.0.0.1 (로컬 전용)
+- 외부 공개/상용 배포 금지
+- API 키·토큰은 환경변수로만 관리
+- 오픈 데이터셋 외 민감 의료데이터 사용 금지
+- 외부 접근이 필요하면 ALLOW_EXTERNAL_ACCESS=true 로만 명시적 허용
